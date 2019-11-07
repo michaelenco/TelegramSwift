@@ -497,9 +497,9 @@ class ChatListController : PeersListController {
         
     }
     
-    func addArchiveTooltip(_ peerId:PeerId) {
+    func addArchiveTooltip(_ peerId:PeerId, circles:Bool = false) {
         guard self.context.sharedContext.layout != .minimisize else { return }
-        let type: ArchiveTooltipType = .justArchive
+        let type: ArchiveTooltipType = circles ? .circles : .justArchive
 //        let count = FastSettings.archivedTooltipCountAndIncrement()
 //        switch count {
 //        case 0:
@@ -936,6 +936,8 @@ class ChatListController : PeersListController {
         switch mode.groupId {
         case .root:
             return super.defaultBarTitle
+        case Namespaces.PeerGroup.circles:
+            return L10n.chatListCircledChats
         default:
             return L10n.chatListArchivedChats
         }

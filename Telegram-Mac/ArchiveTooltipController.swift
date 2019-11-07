@@ -18,6 +18,7 @@ enum ArchiveTooltipType : Equatable {
     case second
     case third
     case justArchive
+    case circles
     
     var localizedTitle: String {
         switch self {
@@ -29,6 +30,8 @@ enum ArchiveTooltipType : Equatable {
             return L10n.archiveTooltipThirdTitle
         case .justArchive:
             return L10n.archiveTooltipJustArchiveTitle
+        case .circles:
+            return L10n.archiveTooltipCirclesTitle
         }
     }
     var localizedText: String? {
@@ -40,6 +43,8 @@ enum ArchiveTooltipType : Equatable {
         case .third:
             return L10n.archiveTooltipThirdText
         case .justArchive:
+            return nil
+        case .circles:
             return nil
         }
     }
@@ -101,7 +106,7 @@ final class ArchiveTooltipView : View {
             
         } else {
             height = 40
-            if type == .justArchive {
+            if type == .justArchive || type == .circles {
                 let undo = self.undo ?? TitleButton()
                 undo.set(font: .medium(.title), for: .Normal)
                 undo.set(color: .blueIcon, for: .Normal)

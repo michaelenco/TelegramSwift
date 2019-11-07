@@ -139,7 +139,7 @@ class AppDelegate: NSResponder, NSApplicationDelegate, NSUserNotificationCenterD
             NSApplication.shared.isAutomaticCustomizeTouchBarMenuItemEnabled = true
         }
         
-        let appGroupName = "6N38VWS5BX.\(baseAppBundleId)"
+        let appGroupName = "C5E42VUKXW.\(baseAppBundleId)"
         guard let containerUrl = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupName) else {
             return
         }
