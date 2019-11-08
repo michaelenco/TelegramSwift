@@ -221,7 +221,7 @@ struct ThemePaletteSettings: PreferencesEntry, Equatable {
         let tinted = decoder.decodeBoolForKey("tinted", orElse: false)
         
         let parent: TelegramBuiltinTheme = TelegramBuiltinTheme(rawValue: decoder.decodeStringForKey("parent", orElse: TelegramBuiltinTheme.dayClassic.rawValue)) ?? (dark ? .nightBlue : .dayClassic)
-        let copyright = decoder.decodeStringForKey("copyright", orElse: "Telegram")
+        let copyright = decoder.decodeStringForKey("copyright", orElse: "Circles for Telegram")
 
         let isNative = decoder.decodeBoolForKey("isNative", orElse: false)
         let name = decoder.decodeStringForKey("name", orElse: "Default")
