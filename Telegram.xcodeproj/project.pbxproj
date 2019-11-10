@@ -859,7 +859,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		880F8EEE2376FFC800D778BE /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Alamofire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8824DB12236E7194000649B7 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		8839C61B2376846C001928A6 /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Alamofire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F0367EB2270836400456348 /* LottieTestModalController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieTestModalController.swift; sourceTree = "<group>"; };
 		9F0367ED22709C5600456348 /* MGalleryLottieItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MGalleryLottieItem.swift; sourceTree = "<group>"; };
 		9F0367EF227208E000456348 /* QRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCode.swift; sourceTree = "<group>"; };
@@ -4297,6 +4299,8 @@
 		D098C7311D7E18CB007784E4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				880F8EEE2376FFC800D778BE /* Alamofire.framework */,
+				8839C61B2376846C001928A6 /* Alamofire.framework */,
 				D004D6FD22B7B92C00926F46 /* RLottieMac.framework */,
 				9F354EA3227077BD006F1D42 /* Lottie.framework */,
 				9F354EA1227076EF006F1D42 /* Lottie.framework */,
