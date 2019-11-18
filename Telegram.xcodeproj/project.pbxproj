@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		8824DB13236E7194000649B7 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8824DB12236E7194000649B7 /* Config.swift */; };
+		88349F76237EC2E4007BE217 /* Alamofire.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8839C61B2376846C001928A6 /* Alamofire.framework */; };
+		88349F77237EC2E4007BE217 /* Alamofire.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 8839C61B2376846C001928A6 /* Alamofire.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		88349F79237EC2F9007BE217 /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 88349F78237EC2F9007BE217 /* SwiftyJSON.framework */; };
+		88349F7A237EC2F9007BE217 /* SwiftyJSON.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 88349F78237EC2F9007BE217 /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9F0367E522707A4D00456348 /* Lottie.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 9F354E9D2270757E006F1D42 /* Lottie.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9F0367EC2270836400456348 /* LottieTestModalController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0367EB2270836400456348 /* LottieTestModalController.swift */; };
 		9F0367EE22709C5600456348 /* MGalleryLottieItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0367ED22709C5600456348 /* MGalleryLottieItem.swift */; };
@@ -799,6 +803,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				88349F7A237EC2F9007BE217 /* SwiftyJSON.framework in Copy Files */,
 				D031637D2324F0CF004AFCCF /* HockeySDK.framework in Copy Files */,
 				D031637E2324F0CF004AFCCF /* Sparkle.framework in Copy Files */,
 				D031637F2324F0CF004AFCCF /* Sparkle.framework in Copy Files */,
@@ -806,6 +811,7 @@
 				9F0367E522707A4D00456348 /* Lottie.framework in Copy Files */,
 				D0675D6C217E20CE004900A7 /* Zip.framework in Copy Files */,
 				C224F2961E43CDDD002FF0B2 /* PostboxMac.framework in Copy Files */,
+				88349F77237EC2E4007BE217 /* Alamofire.framework in Copy Files */,
 				C224F2951E43CDD8002FF0B2 /* MtProtoKitMac.framework in Copy Files */,
 				C224F2941E43CDC4002FF0B2 /* TGUIKit.framework in Copy Files */,
 				C224F2931E43CDBE002FF0B2 /* SwiftSignalKitMac.framework in Copy Files */,
@@ -861,6 +867,7 @@
 /* Begin PBXFileReference section */
 		880F8EEE2376FFC800D778BE /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Alamofire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8824DB12236E7194000649B7 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		88349F78237EC2F9007BE217 /* SwiftyJSON.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SwiftyJSON.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8839C61B2376846C001928A6 /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Alamofire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F0367EB2270836400456348 /* LottieTestModalController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieTestModalController.swift; sourceTree = "<group>"; };
 		9F0367ED22709C5600456348 /* MGalleryLottieItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MGalleryLottieItem.swift; sourceTree = "<group>"; };
@@ -1871,6 +1878,7 @@
 				C2A8E1491F7D268B000FD5E3 /* CoreMedia.framework in Frameworks */,
 				C21A48AE1F7CFBBE0095ADB1 /* OpenGL.framework in Frameworks */,
 				C209C3881F262D48009231FE /* libstdc++.tbd in Frameworks */,
+				88349F76237EC2E4007BE217 /* Alamofire.framework in Frameworks */,
 				C271EB971EB916870034792D /* libtgvoip.framework in Frameworks */,
 				C2C9B92C1E80165D00380D79 /* IOKit.framework in Frameworks */,
 				C2FD33F01E697EC2008D13D4 /* QuickLook.framework in Frameworks */,
@@ -1886,6 +1894,7 @@
 				C253A9671D92E3AF00CDC850 /* AVFoundation.framework in Frameworks */,
 				C2DF47BC1DE79574003AA6C0 /* libopus.a in Frameworks */,
 				C22E06261D7F16C000A11C88 /* TGUIKit.framework in Frameworks */,
+				88349F79237EC2F9007BE217 /* SwiftyJSON.framework in Frameworks */,
 				C253A95C1D9165A400CDC850 /* libwebp.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4299,6 +4308,7 @@
 		D098C7311D7E18CB007784E4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				88349F78237EC2F9007BE217 /* SwiftyJSON.framework */,
 				880F8EEE2376FFC800D778BE /* Alamofire.framework */,
 				8839C61B2376846C001928A6 /* Alamofire.framework */,
 				D004D6FD22B7B92C00926F46 /* RLottieMac.framework */,
