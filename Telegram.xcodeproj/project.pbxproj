@@ -12,6 +12,7 @@
 		88349F77237EC2E4007BE217 /* Alamofire.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 8839C61B2376846C001928A6 /* Alamofire.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		88349F79237EC2F9007BE217 /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 88349F78237EC2F9007BE217 /* SwiftyJSON.framework */; };
 		88349F7A237EC2F9007BE217 /* SwiftyJSON.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 88349F78237EC2F9007BE217 /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		88DFE94E238A0D98005A07EE /* CirclesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFE94D238A0D98005A07EE /* CirclesController.swift */; };
 		9F0367E522707A4D00456348 /* Lottie.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 9F354E9D2270757E006F1D42 /* Lottie.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9F0367EC2270836400456348 /* LottieTestModalController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0367EB2270836400456348 /* LottieTestModalController.swift */; };
 		9F0367EE22709C5600456348 /* MGalleryLottieItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0367ED22709C5600456348 /* MGalleryLottieItem.swift */; };
@@ -869,6 +870,7 @@
 		8824DB12236E7194000649B7 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		88349F78237EC2F9007BE217 /* SwiftyJSON.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SwiftyJSON.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8839C61B2376846C001928A6 /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Alamofire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		88DFE94D238A0D98005A07EE /* CirclesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CirclesController.swift; sourceTree = "<group>"; };
 		9F0367EB2270836400456348 /* LottieTestModalController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieTestModalController.swift; sourceTree = "<group>"; };
 		9F0367ED22709C5600456348 /* MGalleryLottieItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MGalleryLottieItem.swift; sourceTree = "<group>"; };
 		9F0367EF227208E000456348 /* QRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCode.swift; sourceTree = "<group>"; };
@@ -2807,6 +2809,7 @@
 				C22E06301D8043A000A11C88 /* chatlist */,
 				C2303E891D9A76D800098E12 /* MainViewController.swift */,
 				C232EA0D1E155E9400C4D38C /* PeersListController.swift */,
+				88DFE94D238A0D98005A07EE /* CirclesController.swift */,
 			);
 			name = left;
 			sourceTree = "<group>";
@@ -4913,6 +4916,7 @@
 				C21B24651EDB115700FC6CDA /* StringPluralization.swift in Sources */,
 				C248BD291E706DDA004B9106 /* RecentSessionRowItem.swift in Sources */,
 				9F77B3982211979B003B65B8 /* AutoplayPreferences.swift in Sources */,
+				88DFE94E238A0D98005A07EE /* CirclesController.swift in Sources */,
 				C2DF47BE1DE79574003AA6C0 /* opus_header.c in Sources */,
 				C2B9BE891EFC5E7000D6B96F /* Appearance.swift in Sources */,
 				C256A9161FB9E1490043D497 /* AdditionalSettings.swift in Sources */,
@@ -5404,6 +5408,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_SWIFT_FLAGS = "";
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -5548,6 +5553,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_SWIFT_FLAGS = "";
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
@@ -5687,6 +5693,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_SWIFT_FLAGS = "";
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
@@ -5822,6 +5829,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_SWIFT_FLAGS = "";
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
@@ -5959,6 +5967,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_SWIFT_FLAGS = "";
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
@@ -6159,6 +6168,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_SWIFT_FLAGS = "";
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
@@ -6301,6 +6311,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_SWIFT_FLAGS = "";
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -6453,6 +6464,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_SWIFT_FLAGS = "";
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -6498,6 +6510,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_SWIFT_FLAGS = "-Xfrontend -warn-long-function-bodies=100 -Xfrontend -warn-long-expression-type-checking=100";
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
