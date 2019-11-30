@@ -1014,7 +1014,7 @@ class ChatListController : PeersListController {
     
     init(_ context: AccountContext, modal:Bool = false, groupId: PeerGroupId? = nil) {
         self.tooltipController = ChatListTooltipController(context: context)
-        super.init(context, followGlobal:!modal, mode: groupId != nil ? .folder(groupId!) : .folder(PeerGroupId(rawValue: 0)))
+        super.init(context, followGlobal:!modal, mode: groupId != nil ? .folder(groupId!) : .folder(PeerGroupId(rawValue: 2)))
     }
 
 
