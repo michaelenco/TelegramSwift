@@ -611,12 +611,12 @@ class ChatListRowItem: TableRowItem {
     func toggleArchive() {
         if let peerId = peerId {
             switch associatedGroupId {
-            case .root:
-                 _ = updatePeerGroupIdInteractively(postbox: context.account.postbox, peerId: peerId, groupId: Namespaces.PeerGroup.archive).start()
-                 context.sharedContext.bindings.mainController().chatList.addArchiveTooltip(peerId)
-                 context.sharedContext.bindings.mainController().chatList.setAnimateGroupNextTransition(Namespaces.PeerGroup.archive)
+            case Namespaces.PeerGroup.archive:
+                _ = updatePeerGroupIdInteractively(postbox: context.account.postbox, peerId: peerId, groupId: PeerGroupId(rawValue: 2)).start()
             default:
-                 _ = updatePeerGroupIdInteractively(postbox: context.account.postbox, peerId: peerId, groupId: .root).start()
+                _ = updatePeerGroupIdInteractively(postbox: context.account.postbox, peerId: peerId, groupId: Namespaces.PeerGroup.archive).start()
+                context.sharedContext.bindings.mainController().chatList.addArchiveTooltip(peerId)
+            context.sharedContext.bindings.mainController().chatList.setAnimateGroupNextTransition(Namespaces.PeerGroup.archive)
             }
         }
     }
@@ -733,8 +733,8 @@ class ChatListRowItem: TableRowItem {
                 items.append(ContextMenuItem(pinnedType == .none ? tr(L10n.chatListContextPin) : tr(L10n.chatListContextUnpin), handler: togglePin))
             }
             
-            if ((canArchive && associatedGroupId != Namespaces.PeerGroup.archive) || associatedGroupId == Namespaces.PeerGroup.archive) {
-                items.append(ContextMenuItem(associatedGroupId == PeerGroupId(rawValue: 2) ? L10n.chatListSwipingArchive : L10n.chatListSwipingUnarchive, handler: toggleArchive))
+            if canArchive {
+                items.append(ContextMenuItem(associatedGroupId != L10n.chatListSwipingArchive, handler: toggleArchive))
             }
             
             
