@@ -73,8 +73,17 @@ private func circlesControllerEntries(settings: Circles?,
     
     let unreadCountDisplayCategory = notificationSettings.totalUnreadCountDisplayCategory
     
-    func getUnread(_ groupId: PeerGroupId) -> Int32 {
-        if let unread = unreadStates[groupId]?.count(countingCategory: unreadCountDisplayCategory == .chats ? .chats : .messages, mutedCategory: .all) {
+     
+    let type: PeerGroupUnreadCountersCombinedSummary.MuteCategory
+    switch notificationSettings.totalUnreadCountDisplayStyle {
+        case .raw:
+            type = .all
+        case .filtered:
+            type = .filtered
+    }
+
+    func getUnread(_ groupId: PeerGroupId, type: PeerGroupUnreadCountersCombinedSummary.MuteCategory) -> Int32 {
+        if let unread = unreadStates[groupId]?.count(countingCategory: unreadCountDisplayCategory == .chats ? .chats : .messages, mutedCategory: type) {
             return unread
         } else {
             return 0
@@ -85,19 +94,19 @@ private func circlesControllerEntries(settings: Circles?,
     entries.append(.group(
         groupId: PeerGroupId(rawValue: 2),
         title: "Personal",
-        unread: getUnread(PeerGroupId(rawValue: 2))
+        unread: getUnread(PeerGroupId(rawValue: 2), type: type)
     ))
     if let settings = settings {
         for key in settings.groupNames.keys {
             entries.append(.group(
                 groupId: key,
                 title: settings.groupNames[key]!,
-                unread: getUnread(key)
+                unread: getUnread(key, type: type)
             ))
         }
     }
     
-    entries.append(.group(groupId: Namespaces.PeerGroup.archive, title: "Archived", unread: unreadStates[Namespaces.PeerGroup.archive]?.count(countingCategory: .messages, mutedCategory: .all) ?? 0))
+    entries.append(.group(groupId: Namespaces.PeerGroup.archive, title: "Archived", unread: 0))
     return entries
 }
 
@@ -237,8 +246,21 @@ class CirclesRowItem: TableRowItem {
     
 }
 
+class ScrollLessTableView: TableView {
+    open override func scrollWheel(with event: NSEvent) {
+        guard let window = window as? Window else {
+            super.scrollWheel(with: event)
+            return
+        }
+        if !window.inLiveSwiping, super.responds(to: #selector(scrollWheel(with:))) {
+            super.scrollWheel(with: event)
+        }
+        //
+    }
+
+}
 class CirclesListView: View {
-    var tableView = TableView(frame:NSZeroRect, drawBorder: true) {
+    var tableView = ScrollLessTableView(frame:NSZeroRect, drawBorder: true) {
        didSet {
            oldValue.removeFromSuperview()
            addSubview(tableView)
@@ -251,6 +273,10 @@ class CirclesListView: View {
         addSubview(tableView)
     }
     
+    override func updateLocalizationAndTheme(theme: PresentationTheme) {
+        super.updateLocalizationAndTheme(theme: theme)
+        needsLayout = true
+    }
     override func layout() {
         super.layout()
         setFrameOrigin(0,0)
@@ -285,6 +311,8 @@ class CirclesController: TelegramGenericViewController<CirclesListView>, TableVi
         self.chatListNavigationController = chatListNavigationController
         self.tabController = tabController
         super.init(context)
+        
+        backgroundColor = NSColor(red: 0x19/255, green: 0x13/255, blue: 0x3c/255, alpha: 1)
 
     }
     
@@ -326,11 +354,7 @@ class CirclesController: TelegramGenericViewController<CirclesListView>, TableVi
     deinit {
         disposable.dispose()
     }
-    
-    override func loadView() {
-        super.loadView()
-        backgroundColor = NSColor(red: 0x19/255, green: 0x13/255, blue: 0x3c/255, alpha: 1)
-    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
