@@ -147,49 +147,46 @@ enum UIChatListEntry : Identifiable, Comparable {
 
 
 
-fileprivate func prepareEntries(from:[AppearanceWrapperEntry<UIChatListEntry>]?, to:[AppearanceWrapperEntry<UIChatListEntry>], adIndex: UInt16?, context: AccountContext, initialSize:NSSize, animated:Bool, scrollState:TableScrollState? = nil, state: ChatListRowState, groupId: PeerGroupId) -> Signal<TableUpdateTransition, NoError> {
+fileprivate func prepareEntries(from:[AppearanceWrapperEntry<UIChatListEntry>]?, to:[AppearanceWrapperEntry<UIChatListEntry>], adIndex: UInt16?, context: AccountContext, initialSize:NSSize, animated:Bool, scrollState:TableScrollState? = nil, state: ChatListRowState, groupId: PeerGroupId, circlesSettings: Circles) -> Signal<TableUpdateTransition, NoError> {
     
     
-    return getCirclesSettings(postbox: context.account.postbox)
-    |> mapToSignal { settings in
-        return Signal { subscriber in
-            
-            var cancelled: Bool = false
-            
-            func makeItem(_ entry: AppearanceWrapperEntry<UIChatListEntry>) -> TableRowItem {
-                switch entry.entry {
-                case let .chat(inner, isSponsored):
-                    switch inner {
-                    case let .HoleEntry(hole):
-                        return ChatListHoleRowItem(initialSize, context, hole)
-                    case let .MessageEntry(index, message, readState, notifySettings,embeddedState, renderedPeer, peerPresence, summaryInfo):
-                        var pinnedType: ChatListPinnedType = .some
-                        if isSponsored {
-                            pinnedType = .ad
-                        } else if index.pinningIndex == nil {
-                            pinnedType = .none
-                        }
-                        return ChatListRowItem(initialSize, context: context, message: message, index: inner.index, readState:readState, notificationSettings: notifySettings, embeddedState: embeddedState, pinnedType: pinnedType, renderedPeer: renderedPeer, peerPresence: peerPresence, summaryInfo: summaryInfo, state: state, associatedGroupId: groupId)
+    return Signal { subscriber in
+        
+        var cancelled: Bool = false
+        
+        func makeItem(_ entry: AppearanceWrapperEntry<UIChatListEntry>) -> TableRowItem {
+            switch entry.entry {
+            case let .chat(inner, isSponsored):
+                switch inner {
+                case let .HoleEntry(hole):
+                    return ChatListHoleRowItem(initialSize, context, hole)
+                case let .MessageEntry(index, message, readState, notifySettings,embeddedState, renderedPeer, peerPresence, summaryInfo):
+                    var pinnedType: ChatListPinnedType = .some
+                    if isSponsored {
+                        pinnedType = .ad
+                    } else if index.pinningIndex == nil {
+                        pinnedType = .none
                     }
-                case let .group(_, groupId, peers, message, unreadState, unreadCountDisplayCategory, animated, archiveStatus):
-                    return ChatListRowItem(initialSize, context: context, pinnedType: .none, groupId: groupId, peers: peers, message: message, unreadState: unreadState, unreadCountDisplayCategory: unreadCountDisplayCategory, animateGroup: animated, archiveStatus: archiveStatus, groupName: settings?.groupNames[groupId] ?? "unnamed circle")
+                    return ChatListRowItem(initialSize, context: context, message: message, index: inner.index, readState:readState, notificationSettings: notifySettings, embeddedState: embeddedState, pinnedType: pinnedType, renderedPeer: renderedPeer, peerPresence: peerPresence, summaryInfo: summaryInfo, state: state, associatedGroupId: circlesSettings.inclusions[renderedPeer.peerId] ?? groupId)
                 }
+            case let .group(_, groupId, peers, message, unreadState, unreadCountDisplayCategory, animated, archiveStatus):
+                return ChatListRowItem(initialSize, context: context, pinnedType: .none, groupId: groupId, peers: peers, message: message, unreadState: unreadState, unreadCountDisplayCategory: unreadCountDisplayCategory, animateGroup: animated, archiveStatus: archiveStatus, groupName: circlesSettings.groupNames[groupId] ?? "unnamed circle")
             }
-            
-            
-            
-            let (deleted,inserted,updated) = proccessEntries(from, right: to, { entry -> TableRowItem in
-                return makeItem(entry)
-            })
-            
-            let nState = scrollState ?? (animated ? .none(nil) : .saveVisible(.lower))
-            let transition = TableUpdateTransition(deleted: deleted, inserted: inserted, updated:updated, animated:animated, state: nState, animateVisibleOnly: false)
-            
-            subscriber.putNext(transition)
-            subscriber.putCompletion()
-            return ActionDisposable {
-               cancelled = true
-            }
+        }
+        
+        
+        
+        let (deleted,inserted,updated) = proccessEntries(from, right: to, { entry -> TableRowItem in
+            return makeItem(entry)
+        })
+        
+        let nState = scrollState ?? (animated ? .none(nil) : .saveVisible(.lower))
+        let transition = TableUpdateTransition(deleted: deleted, inserted: inserted, updated:updated, animated:animated, state: nState, animateVisibleOnly: false)
+        
+        subscriber.putNext(transition)
+        subscriber.putCompletion()
+        return ActionDisposable {
+           cancelled = true
         }
     }
 }
@@ -319,7 +316,7 @@ class ChatListController : PeersListController {
         
         let queue = self.queue
 
-        let list:Signal<TableUpdateTransition,NoError> = combineLatest(queue: queue, chatHistoryView, appearanceSignal, stateValue.get(), context.chatUndoManager.allStatuses(), hiddenArchiveState.get(), appNotificationSettings(accountManager: context.sharedContext.accountManager)) |> mapToQueue { value, appearance, state, undoStatuses, archiveIsHidden, inAppSettings -> Signal<TableUpdateTransition, NoError> in
+        let list:Signal<TableUpdateTransition,NoError> = combineLatest(queue: queue, chatHistoryView, appearanceSignal, stateValue.get(), context.chatUndoManager.allStatuses(), hiddenArchiveState.get(), appNotificationSettings(accountManager: context.sharedContext.accountManager), Circles.settingsView(postbox: context.account.postbox)) |> mapToQueue { value, appearance, state, undoStatuses, archiveIsHidden, inAppSettings, circlesSettings -> Signal<TableUpdateTransition, NoError> in
                     
             var removeNextAnimation = value.2
             
@@ -360,7 +357,7 @@ class ChatListController : PeersListController {
                 }
             }
            
-            if groupId != PeerGroupId(rawValue: 2) && groupId != Namespaces.PeerGroup.archive {
+            if groupId != .root && groupId != PeerGroupId(rawValue: 2) && groupId != Namespaces.PeerGroup.archive {
                 func isUnread(_ entry: UIChatListEntry) -> Bool{
                     switch entry {
                     case let .chat(entry, _):
@@ -472,7 +469,7 @@ class ChatListController : PeersListController {
             
             let prev = previousEntries.swap(entries)
             
-            return prepareEntries(from: prev, to: entries, adIndex: nil, context: context, initialSize: initialSize.modify({$0}), animated: animated.swap(true), scrollState: scroll, state: state, groupId: groupId)
+            return prepareEntries(from: prev, to: entries, adIndex: nil, context: context, initialSize: initialSize.modify({$0}), animated: animated.swap(true), scrollState: scroll, state: state, groupId: groupId, circlesSettings: circlesSettings)
         }
         
         
@@ -1032,7 +1029,7 @@ class ChatListController : PeersListController {
     
     init(_ context: AccountContext, modal:Bool = false, groupId: PeerGroupId? = nil) {
         self.tooltipController = ChatListTooltipController(context: context)
-        super.init(context, followGlobal:!modal, mode: groupId != nil ? .folder(groupId!) : .folder(PeerGroupId(rawValue: 2)))
+        super.init(context, followGlobal:!modal, mode: groupId != nil ? .folder(groupId!) : .folder(.root))
     }
 
 

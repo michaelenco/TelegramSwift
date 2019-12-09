@@ -14,6 +14,7 @@ private enum ApplicationSpecificPreferencesKeyValues: Int32 {
     case inAppNotificationSettings
     case baseAppSettings
     case generatedMediaStoreSettings
+    case circlesSettings
     case instantViewAppearance = 11
     case additionalSettings = 15
     case themeSettings = 22
@@ -49,6 +50,7 @@ struct ApplicationSharedPreferencesKeys {
     static let autoNight = applicationSpecificPreferencesKey(ApplicationSpecificPreferencesKeyValues.autoNight.rawValue)
     static let additionalSettings = applicationSpecificPreferencesKey(ApplicationSpecificPreferencesKeyValues.additionalSettings.rawValue)
     static let voiceCallSettings = applicationSpecificPreferencesKey(ApplicationSpecificPreferencesKeyValues.voiceCallSettings.rawValue)
+    static let circlesSettings = applicationSpecificPreferencesKey(ApplicationSpecificPreferencesKeyValues.circlesSettings.rawValue)
 }
 
 

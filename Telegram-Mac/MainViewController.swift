@@ -79,6 +79,8 @@ final class UpdateTabView : Control {
         progressView.center()
         imageView.center()
         
+        canDrawSubviewsIntoLayer = true
+        
     }
     
     required init?(coder: NSCoder) {
