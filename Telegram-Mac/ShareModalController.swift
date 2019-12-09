@@ -880,85 +880,29 @@ class ShareModalController: ModalViewController, Notifable, TGModernGrowingDeleg
         
         let list:Signal<TableUpdateTransition, NoError> = combineLatest(request.get() |> distinctUntilChanged |> deliverOnPrepareQueue, search.get() |> distinctUntilChanged |> deliverOnPrepareQueue) |> mapToSignal { location, query -> Signal<TableUpdateTransition, NoError> in
             
-             if query.request.isEmpty {
-                
-                var signal:Signal<(ChatListView,ViewUpdateType), NoError>
-                
-                switch(location) {
-                case let .Initial(count, _):
-                    signal = context.account.viewTracker.tailChatListView(groupId: .root, count: count)
-                case let .Index(index, _):
-                    signal = context.account.viewTracker.aroundChatListView(groupId: .root, index: index, count: 30)
-                }
-                
-                return signal |> deliverOnPrepareQueue |> mapToSignal { value -> Signal<(ChatListView,ViewUpdateType, [PeerId: PeerStatusStringResult], Peer), NoError> in
-                    var peerIds:[PeerId] = []
-                    for entry in value.0.entries {
-                        switch entry {
-                        case let .MessageEntry(_, _, _, _, _, renderedPeer, _, _):
-                            peerIds.append(renderedPeer.peerId)
-                        default:
-                            break
-                        }
+            
+            _ = previousChatList.swap(nil)
+            var localPeers:Signal<[RenderedPeer], NoError>
+            var remotePeers:Signal<[RenderedPeer], NoError>
+            if query.request.isEmpty {
+                localPeers = recentPeers(account: context.account)
+                |> map { recent in
+                    switch recent {
+                    case .disabled:
+                        return []
+                    case let .peers(peers):
+                        return peers.map {p in return RenderedPeer(peer: p)}
                     }
-                    
-                    _ = previousChatList.swap(value.0)
-                    
-                    let keys = peerIds.map {PostboxViewKey.peer(peerId: $0, components: .all)}
-                    return combineLatest(context.account.postbox.combinedView(keys: keys), context.account.postbox.loadedPeerWithId(context.peerId)) |> map { values, selfPeer in
-                        
-                        var presences:[PeerId: PeerStatusStringResult] = [:]
-                        for value in values.views {
-                            if let view = value.value as? PeerView {
-                                presences[view.peerId] = stringStatus(for: view, context: context)
-                            }
-                        }
-                        
-                        return (value.0, value.1, presences, selfPeer)
-                        
-                    } |> take(1)
-                } |> deliverOn(prepareQueue) |> take(1) |> map { value -> TableUpdateTransition in
-                    var entries:[SelectablePeersEntry] = []
-                    
-                    var contains:[PeerId:PeerId] = [:]
-                    
-                    
-                    entries.append(.plain(value.3, ChatListIndex(pinningIndex: 0, messageIndex: MessageIndex(id: MessageId(peerId: PeerId(0), namespace: 0, id: Int32.max), timestamp: Int32.max)), nil, true))
-                    contains[value.3.id] = value.3.id
-                    
-                    for entry in value.0.entries {
-                        switch entry {
-                        case let .MessageEntry(id, _, _, _, _, renderedPeer, _, _):
-                            if let main = renderedPeer.peer {
-                                if contains[main.id] == nil {
-                                    if share.possibilityPerformTo(main) {
-                                        if let peer = renderedPeer.chatMainPeer {
-                                            if main.id.namespace == Namespaces.Peer.SecretChat {
-                                                entries.append(.secretChat(peer, main.id, id, value.2[peer.id], true))
-                                            } else {
-                                                entries.append(.plain(peer, id, value.2[peer.id], true))
-                                            }
-                                        }
-                                        contains[main.id] = main.id
-                                    }
-                                }
-                            }
-                        default:
-                            break
-                        }
-                    }
-                    
-                    entries.sort(by: <)
-                    
-                    return prepareEntries(from: previous.swap(entries), to: entries, account: context.account, initialSize: initialSize, animated: true, multipleSelection: share.multipleSelection, selectInteraction:selectInteraction)
                 }
+                remotePeers = Signal<[RenderedPeer], NoError>.single([])
+                
             } else {
+                localPeers = context.account.postbox.searchPeers(query: query.request.lowercased())
                 
-                _ = previousChatList.swap(nil)
+                remotePeers = Signal<[RenderedPeer], NoError>.single([]) |> then( searchPeers(account: context.account, query: query.request.lowercased()) |> map { $0.0.map {RenderedPeer($0)} + $0.1.map {RenderedPeer($0)} } )
                 
-                let localPeers = context.account.postbox.searchPeers(query: query.request.lowercased())
-                
-                let remotePeers = Signal<[RenderedPeer], NoError>.single([]) |> then( searchPeers(account: context.account, query: query.request.lowercased()) |> map { $0.0.map {RenderedPeer($0)} + $0.1.map {RenderedPeer($0)} } )
+            }
+
                 
                 return combineLatest(localPeers, remotePeers) |> map {$0 + $1} |> mapToSignal { peers -> Signal<([RenderedPeer], [PeerId: PeerStatusStringResult], Peer), NoError> in
                     let keys = peers.map {PostboxViewKey.peer(peerId: $0.peerId, components: .all)}
@@ -1013,7 +957,6 @@ class ShareModalController: ModalViewController, Notifable, TGModernGrowingDeleg
                     
                         return prepareEntries(from: previous.swap(entries), to: entries, account: context.account, initialSize: initialSize, animated: false, multipleSelection: share.multipleSelection, selectInteraction:selectInteraction)
                 }
-            }
         } |> deliverOnMainQueue
         
         disposable.set(list.start(next: { [weak self] transition in
