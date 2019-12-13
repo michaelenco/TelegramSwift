@@ -79,7 +79,7 @@ final class UpdateTabView : Control {
         progressView.center()
         imageView.center()
         
-        canDrawSubviewsIntoLayer = true
+        //canDrawSubviewsIntoLayer = true
         
     }
     
@@ -175,7 +175,7 @@ final class UpdateTabController: GenericViewController<UpdateTabView> {
     
     func updateLayout(_ layout: SplitViewState) {
         genericView.layoutState = layout
-        genericView.setFrameOrigin(NSMakePoint(0, layout == .minimisize ? 0 : 50))
+        genericView.setFrameOrigin(NSMakePoint(80, layout == .minimisize ? 0 : 50))
     }
     
     deinit {
@@ -226,7 +226,7 @@ class MainViewController: TelegramViewController {
         circlesController.view.frame = splice
         tabController.view.frame = remainder
         #if !APP_STORE
-        updateController.genericView.setFrameSize(NSMakeSize(frame.width, 50))
+        updateController.genericView.setFrameSize(NSMakeSize(frame.width - 80, 50))
         #endif
     }
     
