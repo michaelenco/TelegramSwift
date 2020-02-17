@@ -7,18 +7,6 @@ import TelegramApi
 import MtProtoKit
 import SyncCore
 
-/*fileprivate func prepareEntries() -> Signal<TableUpdateTransition, NoError>{
-    return Signal { subscriber in
-        
-    }
-}*/
-
-class UpdatedNavigationViewController: NavigationViewController {
-    var callback:(() -> Void)?
-    override func currentControllerDidChange() {
-        callback?()
-    }
-}
              
 final class CirclesArguments {
     let context: AccountContext
@@ -56,7 +44,7 @@ enum CirclesTableEntry : TableItemListNodeEntry {
     func item(_ arguments: CirclesArguments, initialSize: NSSize) -> TableRowItem {
         switch self {
         case .sectionId:
-            return GeneralRowItem(initialSize, height: 0, stableId: stableId)
+            return GeneralRowItem(initialSize, height: 0, stableId: stableId, backgroundColor: theme.colors.grayBackground)
         case let .group(groupId, title, unread):
             return CirclesRowItem(initialSize, stableId: stableId, groupId: groupId, title: title, unread: Int(unread))
             
@@ -334,58 +322,124 @@ fileprivate func prepareTransition(left:[AppearanceWrapperEntry<CirclesTableEntr
 class CirclesController: TelegramGenericViewController<CirclesListView>, TableViewDelegate {
     
     private let disposable = MetaDisposable()
-    var chatListNavigationController:UpdatedNavigationViewController
+    var chatListNavigationController:NavigationViewController
     var tabController:TabBarController
+    var settings:Circles
     
-    init(context: AccountContext, chatListNavigationController: UpdatedNavigationViewController, tabController: TabBarController) {
+    init(context: AccountContext, chatListNavigationController: NavigationViewController, tabController: TabBarController, settings: Circles) {
         self.chatListNavigationController = chatListNavigationController
         self.tabController = tabController
+        self.settings = settings
         super.init(context)
         
         backgroundColor = theme.colors.grayBackground
 
     }
     
-    func select(groupId:PeerGroupId?) {
+    func resetCircleLastPeer() {
+        var groupId:PeerGroupId?
+        let signal = Circles.updateSettings(postbox: context.account.postbox) { entry in
+            groupId = entry.currentCircle
+            entry.lastCirclePeer[entry.currentCircle] = nil
+            self.settings = entry
+            return entry
+        } |> deliverOnMainQueue |> map {
+            if let groupId = groupId {
+                self.select(groupId: groupId)
+            }
+        }
+        _ = signal.start()
+    }
+    func follow(peerId: PeerId) {
+        let signal = context.account.postbox.transaction { transaction -> PeerGroupId? in
+            let inclusion = transaction.getPeerChatListInclusion(peerId)
+            var nextCircle:PeerGroupId
+            switch inclusion {
+                case let .ifHasMessagesOrOneOf(currentGroupId, _, _):
+                    nextCircle = currentGroupId
+                case .notIncluded:
+                    nextCircle = .root
+            }
+
+            var switchTo:PeerGroupId?
+            Circles.updateSettings(transaction: transaction) { entry in
+                if nextCircle != entry.currentCircle {
+                    switchTo = nextCircle
+                    entry.currentCircle = nextCircle
+                }
+                entry.lastCirclePeer[entry.currentCircle] = peerId
+                self.settings = entry
+                return entry
+            }
+            return switchTo
+        } |> deliverOnMainQueue |> map { switchTo in
+            self.select(groupId: self.settings.currentCircle, notify: false)
+            if let switchTo = switchTo {
+                let chatListController = ChatListController(self.context, modal: false, groupId: switchTo)
+                self.chatListNavigationController.empty = chatListController
+                self.chatListNavigationController.gotoEmpty(false)
+                //self.chatListNavigationController.push(ChatListController(self.context, modal: false, groupId: switchTo), false, style: .none)
+            }
+        }
+        _ = signal.start()
+    }
+    func select(groupId:PeerGroupId?, notify: Bool = false) {
         if let groupId = groupId {
             if let item = genericView.tableView.item(stableId: CirclesTableEntryStableId.group(groupId)) {
-                genericView.tableView.select(item: item, notify: false)
+                genericView.tableView.select(item: item, notify: notify)
             }
         } else {
             if let item = genericView.tableView.item(stableId: CirclesTableEntryStableId.sectionId) {
-                genericView.tableView.select(item: item, notify: false)
+                genericView.tableView.select(item: item, notify: notify)
             }
         }
     }
     func selectionDidChange(row: Int, item: TableRowItem, byClick: Bool, isNew: Bool) {
         if let item = item as? CirclesRowItem {
-            if item.groupId == PeerGroupId(rawValue: 2) {
+            (baseAppSettings(accountManager: context.sharedContext.accountManager) |> deliverOnMainQueue).start(next: { [weak self] baSettings in
+                guard let `self` = self else {return}
                 
-                let modalController = NewCircleModalController(context)
+                let chatTabIndex:Int
+                if baSettings.showCallsTab {
+                    chatTabIndex = 2
+                } else {
+                    chatTabIndex = 1
+                }
                 
-                showModal(with: modalController, for: mainWindow)
-            } else {
-                (baseAppSettings(accountManager: context.sharedContext.accountManager) |> deliverOnMainQueue).start(next: { [weak self] settings in
-                    guard let `self` = self else {return}
+                self.tabController.select(index: chatTabIndex)
+                
+                let signal = Circles.updateSettings(postbox: self.context.account.postbox) { entry in
+                    entry.currentCircle = item.groupId
+                    self.settings = entry
+                    return entry
+                } |> deliverOnMainQueue |> map {
+                    self.select(groupId: item.groupId)
+
+                    let chatListController = ChatListController(self.context, modal: false, groupId: item.groupId)
+                    self.chatListNavigationController.empty = chatListController
+                    self.chatListNavigationController.gotoEmpty(false)
+                    //self.chatListNavigationController.push(ChatListController(self.context, modal: false, groupId: item.groupId), false, style: .none)
                     
-                    let chatTabIndex:Int
-                    if settings.showCallsTab {
-                        chatTabIndex = 2
+                    if let peerId = self.settings.lastCirclePeer[item.groupId] {
+                        self.context.sharedContext.bindings.rootNavigation().push(ChatController(context: self.context, chatLocation: .peer(peerId)))
                     } else {
-                        chatTabIndex = 1
+                        self.context.sharedContext.bindings.rootNavigation().gotoEmpty(false)
                     }
-                    
-                    let controller = ChatListController(self.context, modal: false, groupId: item.groupId)
-                    self.tabController.select(index: chatTabIndex)
-                    self.chatListNavigationController.empty = controller
-                    self.chatListNavigationController.gotoEmpty(true)
-                })
-            }
+                }
+                _ = signal.start()
+            })
         }
         return
     }
     
     func selectionWillChange(row: Int, item: TableRowItem, byClick: Bool) -> Bool {
+        if let item = item as? CirclesRowItem {
+            if item.groupId == PeerGroupId(rawValue: 2) {
+                let modalController = NewCircleModalController(context)
+                showModal(with: modalController, for: mainWindow)
+                return false
+            }
+        }
         return true
     }
     
@@ -417,10 +471,7 @@ class CirclesController: TelegramGenericViewController<CirclesListView>, TableVi
         
         let arguments = CirclesArguments(context: context)
         
-        let initialTransition: Signal<TableUpdateTransition, NoError> = combineLatest(
-            Circles.getSettings(postbox: context.account.postbox),
-            appearanceSignal
-        ) |> take(1) |> map { settings, appearance in
+        let initialTransition: Signal<Void, NoError> = appearanceSignal |> map { appearance in
             var entries: [CirclesTableEntry] = []
             entries.append(.sectionId)
             entries.append(.group(
@@ -429,77 +480,77 @@ class CirclesController: TelegramGenericViewController<CirclesListView>, TableVi
                 unread: 0
             ))
             
-            if settings.groupNames.keys.sorted() == settings.index.keys.sorted() {
-                for key in settings.groupNames.keys.sorted(by: {settings.index[$0]! < settings.index[$1]!})  {
-                    entries.append(.group(
-                        groupId: key,
-                        title: settings.groupNames[key]!,
-                        unread: 0
-                    ))
-                }
+            for key in self.settings.sortedCircles {
+                entries.append(.group(
+                    groupId: key,
+                    title: self.settings.groupNames[key]!,
+                    unread: 0
+                ))
             }
 
             entries.append(.group(groupId: Namespaces.PeerGroup.archive, title: "Archived", unread: 0))
-            if settings.botPeerId != nil {
+            if self.settings.botPeerId != nil {
                 entries.append(.group(groupId: PeerGroupId(rawValue: 2), title: "New Circle", unread: 0))
             }
 
             let mappedEntries = entries.map({AppearanceWrapperEntry(entry: $0, appearance: appearance)})
             previous = Atomic(value: mappedEntries)
             var initial:Atomic<[AppearanceWrapperEntry<CirclesTableEntry>]> = Atomic(value: [])
-            return prepareTransition(
+            
+            var transition = prepareTransition(
                 left: initial.swap(mappedEntries),
                 right: mappedEntries,
                 initialSize: initialSize.modify({$0}),
                 arguments: arguments
             )
+
+            self.genericView.tableView.merge(with: transition)
+            self.readyOnce()
+            //self.select(groupId: self.settings.currentCircle, notify: false)
+            //self?.chatListNavigationController.callback?()
         } |> deliverOnMainQueue
-        initialTransition.start(next: { [weak self] transition in
-            self?.genericView.tableView.merge(with: transition)
-            self?.readyOnce()
-            self?.chatListNavigationController.callback?()
-            
-            let unreadCountsKey = PostboxViewKey.unreadCounts(items: [.total(nil)])
-            let counterSignal: Signal<Void, NoError> = context.account.postbox.combinedView(keys: [unreadCountsKey])
-            |> mapToSignal { _ in
-                return context.account.postbox.transaction { transaction in
-                    transaction.recalculateChatListGroupStats(groupId: .root)
-                }
+        _ = initialTransition.start()
+        
+        let unreadCountsKey = PostboxViewKey.unreadCounts(items: [.total(nil)])
+        let counterSignal: Signal<Void, NoError> = context.account.postbox.combinedView(keys: [unreadCountsKey])
+        |> mapToSignal { _ in
+            return context.account.postbox.transaction { transaction in
+                transaction.recalculateChatListGroupStats(groupId: .root)
+            }
+        }
+        
+        let chatHistoryView: Signal<(ChatListView, ViewUpdateType), NoError> = context.account.viewTracker.tailChatListView(groupId: .root, count: 10)
+        
+        let transition: Signal<TableUpdateTransition, NoError> = combineLatest(
+            Circles.settingsView(postbox: context.account.postbox),
+            appearanceSignal,
+            chatHistoryView,
+            appNotificationSettings(accountManager: context.sharedContext.accountManager),
+            counterSignal)
+        |> map { settings, appearance, chatHistory, inAppSettings, _ in
+            self.settings = settings
+            var unreadStates:[PeerGroupId:PeerGroupUnreadCountersCombinedSummary] = [:]
+            for group in chatHistory.0.groupEntries {
+                unreadStates[group.groupId] = group.unreadState
             }
             
-            let chatHistoryView: Signal<(ChatListView, ViewUpdateType), NoError> = context.account.viewTracker.tailChatListView(groupId: .root, count: 10)
+            unreadStates[.root] = context.account.postbox.groupStats(.root)
             
-            let transition: Signal<TableUpdateTransition, NoError> = combineLatest(
-                Circles.settingsView(postbox: context.account.postbox),
-                appearanceSignal,
-                chatHistoryView,
-                appNotificationSettings(accountManager: context.sharedContext.accountManager),
-                counterSignal)
-            |> map { settings, appearance, chatHistory, inAppSettings, _ in
-                var unreadStates:[PeerGroupId:PeerGroupUnreadCountersCombinedSummary] = [:]
-                for group in chatHistory.0.groupEntries {
-                    unreadStates[group.groupId] = group.unreadState
-                }
-                
-                unreadStates[.root] = context.account.postbox.groupStats(.root)
-                
-                let entries = circlesControllerEntries(settings: settings, unreadStates: unreadStates, notificationSettings: inAppSettings)
-                    .map({AppearanceWrapperEntry(entry: $0, appearance: appearance)})
-                
-                return prepareTransition(
-                    left: previous.swap(entries),
-                    right: entries,
-                    initialSize: initialSize.modify({$0}),
-                    arguments: arguments
-                )
-                
-            } |> deliverOnMainQueue
+            let entries = circlesControllerEntries(settings: settings, unreadStates: unreadStates, notificationSettings: inAppSettings)
+                .map({AppearanceWrapperEntry(entry: $0, appearance: appearance)})
             
-            transition.start(next: { [weak self] transition in
-                self?.genericView.tableView.merge(with: transition)
-                self?.readyOnce()
-                self?.chatListNavigationController.callback?()
-            })
+            return prepareTransition(
+                left: previous.swap(entries),
+                right: entries,
+                initialSize: initialSize.modify({$0}),
+                arguments: arguments
+            )
+            
+        } |> deliverOnMainQueue
+        
+        transition.start(next: { [weak self] transition in
+            self?.genericView.tableView.merge(with: transition)
+            //self?.readyOnce()
         })
     }
 }

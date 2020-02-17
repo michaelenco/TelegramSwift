@@ -659,6 +659,7 @@ class ChatListRowItem: TableRowItem {
                 return Circles.addToCircle(postbox: self.context.account.postbox, network: self.context.account.network, peerId: peerId, groupId: id, userId: self.context.account.peerId)
             }).start()
             context.sharedContext.bindings.mainController().chatList.setAnimateGroupNextTransition(id)
+            context.sharedContext.bindings.rootNavigation().gotoEmpty(true)
         }
     }
     

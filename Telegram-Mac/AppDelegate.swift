@@ -525,12 +525,14 @@ class AppDelegate: NSResponder, NSApplicationDelegate, NSUserNotificationCenterD
                         |> map { account in
                             if let account = account {
                                 var settings: LaunchSettings?
+                                var circlesSettings = Circles.defaultConfig
                                 if let action = sharedContext.getLaunchActionOnce(for: account.id) {
                                     settings = LaunchSettings(applyText: nil, previousText: nil, navigation: action, openAtLaunch: true)
                                 } else {
                                     let semaphore = DispatchSemaphore(value: 0)
                                     _ = account.postbox.transaction { transaction in
                                         settings = transaction.getPreferencesEntry(key: ApplicationSpecificPreferencesKeys.launchSettings) as? LaunchSettings
+                                        circlesSettings = Circles.getSettings(transaction: transaction)
                                         semaphore.signal()
                                         }.start()
                                     semaphore.wait()
@@ -538,7 +540,7 @@ class AppDelegate: NSResponder, NSApplicationDelegate, NSUserNotificationCenterD
                                 let tonContext = StoredTonContext(basePath: account.basePath, postbox: account.postbox, network: account.network, keychain: tonKeychain)
 
                                 let context = AccountContext(sharedContext: sharedApplicationContext.sharedContext, window: window, tonContext: tonContext, account: account)
-                                return AuthorizedApplicationContext(window: window, context: context, launchSettings: settings ?? LaunchSettings.defaultSettings)
+                                return AuthorizedApplicationContext(window: window, context: context, launchSettings: settings ?? LaunchSettings.defaultSettings, circlesSettings: circlesSettings)
                                 
                             } else {
                                 return nil

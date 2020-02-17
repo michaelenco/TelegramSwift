@@ -226,7 +226,7 @@ class MainViewController: TelegramViewController {
     let circlesController: CirclesController
     let tabController:TabBarController = TabBarController()
     let contacts:ContactsController
-    let chatListNavigation:UpdatedNavigationViewController
+    let chatListNavigation:NavigationViewController
     let settings:AccountViewController
     private let phoneCalls:RecentCallsViewController
     private let layoutDisposable:MetaDisposable = MetaDisposable()
@@ -312,36 +312,6 @@ class MainViewController: TelegramViewController {
             #endif
         }))
         
-        tabController.didChangedIndex = { [weak self] index in
-            self?.checkSettings(index)
-            if index != 2 {
-                self?.circlesController.select(groupId: nil)
-            } else {
-                if let nav = self?.chatListNavigation {
-                    if let controller = nav.controller as? ChatListController {
-                        switch controller.mode {
-                        case let .folder(groupId):
-                            self?.circlesController.select(groupId: groupId)
-                        default:
-                            break
-                        }
-                    }
-                }
-            }
-        }
-        chatListNavigation.callback =  { [weak self] in
-           if let nav = self?.chatListNavigation {
-               if let controller = nav.controller as? ChatListController {
-                   switch controller.mode {
-                   case let .folder(groupId):
-                       self?.circlesController.select(groupId: groupId)
-                   default:
-                       break
-                   }
-               }
-           }
-       }
-       chatListNavigation.callback?()
     }
     
     func prepareControllers() {
@@ -376,6 +346,16 @@ class MainViewController: TelegramViewController {
                 }
             }
         }))
+    }
+    
+    override func navigationWillChangeController() {
+        if let controller = context.sharedContext.bindings.rootNavigation().controller as? ChatController {
+            let peerId = controller.chatInteraction.peerId
+            circlesController.follow(peerId: peerId)
+        }
+        if let controller = context.sharedContext.bindings.rootNavigation().controller as? EmptyChatViewController {
+            circlesController.resetCircleLastPeer()
+        }
     }
     
     private func _showFastChatSettings(_ control: Control, unreadCount: Int32) {
@@ -666,15 +646,17 @@ class MainViewController: TelegramViewController {
         return self.tabController.current == chatListNavigation
     }
     
-    override init(_ context: AccountContext) {
-        chatListNavigation = UpdatedNavigationViewController(ChatListController(context), context.window)
+    init(_ context: AccountContext, _ circlesSettings: Circles) {
+        let chatListController = ChatListController(context, groupId: circlesSettings.currentCircle)
+        chatListNavigation = NavigationViewController(chatListController, context.window)
         contacts = ContactsController(context)
         settings = AccountViewController(context)
         phoneCalls = RecentCallsViewController(context)
         circlesController = CirclesController(
             context: context,
             chatListNavigationController: chatListNavigation,
-            tabController: tabController
+            tabController: tabController,
+            settings: circlesSettings
         )
         #if !APP_STORE
             updateController = UpdateTabController(context.sharedContext)
@@ -682,7 +664,7 @@ class MainViewController: TelegramViewController {
         super.init(context)
         bar = NavigationBarStyle(height: 0)
        // chatListNavigation.alwaysAnimate = true
-    }
+        }
 
     deinit {
         layoutDisposable.dispose()

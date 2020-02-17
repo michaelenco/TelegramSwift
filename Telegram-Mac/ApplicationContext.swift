@@ -138,7 +138,7 @@ final class AuthorizedApplicationContext: NSObject, SplitViewDelegate {
     
     private var launchAction: ApplicationContextLaunchAction?
     
-    init(window: Window, context: AccountContext, launchSettings: LaunchSettings) {
+    init(window: Window, context: AccountContext, launchSettings: LaunchSettings, circlesSettings: Circles) {
         
         self.context = context
         emptyController = EmptyChatViewController(context)
@@ -175,8 +175,8 @@ final class AuthorizedApplicationContext: NSObject, SplitViewDelegate {
         
         window.rootViewController = rightController
         
-        leftController = MainViewController(context);
-
+        leftController = MainViewController(context, circlesSettings)
+        rightController.add(listener: WeakReference(value: leftController))
         
         leftController.navigationController = rightController
         
